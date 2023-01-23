@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "rusty-hls",
+    "hls-rs",
+    "hls-stream-reader",
+]
