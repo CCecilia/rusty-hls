@@ -1,5 +1,5 @@
 use clap::Parser;
-use hls_stream_reader::StreamUrl;
+use hls_stream_reader::{reader_lib::StreamReader, stream_url::StreamUrl};
 use std::{path::PathBuf, process::exit};
 
 #[derive(Parser)]
@@ -17,7 +17,7 @@ struct CLI {
 #[tokio::main]
 async fn main() {
     let cli_args = CLI::parse();
-    let hls_file_path: PathBuf;
+    let mut hls_file_path: Option<PathBuf> = None;
 
     if let Some(url) = cli_args.stream_url {
         let stream_url = StreamUrl::new(url);
@@ -29,9 +29,15 @@ async fn main() {
         let file_download = stream_url.download_to_file(None).await;
 
         if let Ok(file_download) = file_download {
-            hls_file_path = file_download;
+            hls_file_path = Some(file_download);
         }
-    } else if let Some(file_path) = cli_args.master_file {
-        hls_file_path = PathBuf::from(file_path);
+    }
+
+    if let Some(file_path) = cli_args.master_file {
+        hls_file_path = Some(PathBuf::from(file_path));
+    }
+
+    if let Some(hls_file_path) = hls_file_path {
+        let reader = StreamReader::new(hls_file_path);
     }
 }
