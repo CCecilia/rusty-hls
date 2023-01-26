@@ -19,3 +19,9 @@ pub enum PlaylistDownloadError {
     #[error("Failed to copy playlist to temp file")]
     FailedToCopyData,
 }
+
+#[derive(Error, Debug)]
+pub enum ReaderError {
+    #[error("Failed to open file")]
+    FailedToOpen,
+}
