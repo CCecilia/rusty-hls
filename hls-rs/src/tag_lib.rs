@@ -9,6 +9,26 @@ pub trait TagType {
         Self: Sized;
 }
 
+fn parse_line(line: String) -> Result<String, TagError> {
+    if !line.starts_with("#") {
+        return Err(TagError::NotATagLine);
+    }
+
+    let tag_delim = ":";
+
+    if line.contains(tag_delim) {
+        if let Some((tag, _attrs)) = line.split_once(tag_delim) {
+            let fmt_tag = tag.replace("#", "");
+            return Ok(fmt_tag);
+        };
+    } else {
+        let fmt_tag = line.replace("#", "");
+        return Ok(fmt_tag);
+    }
+
+    Err(TagError::FailedToParse)
+}
+
 pub enum BasicTag {
     FileType,
     Version,
@@ -25,24 +45,7 @@ impl TagType for BasicTag {
     fn from_line(line: Result<String, io::Error>) -> Result<Self, TagError> {
         match line {
             Ok(line_str) => {
-                if !line_str.starts_with("#") {
-                    return Err(TagError::NotATagLine);
-                }
-
-                let tag_delim = ":";
-                let mut tag_check: Option<String> = None;
-
-                if line_str.contains(tag_delim) {
-                    if let Some((tag, _attrs)) = line_str.split_once(tag_delim) {
-                        let fmt_tag = tag.replace("#", "");
-                        tag_check = Some(fmt_tag);
-                    };
-                } else {
-                    let fmt_tag = line_str.replace("#", "");
-                    tag_check = Some(fmt_tag);
-                }
-
-                if let Some(tag_check) = tag_check {
+                if let Ok(tag_check) = parse_line(line_str) {
                     match tag_check.as_str() {
                         "EXTM3U" => Ok(BasicTag::FileType),
                         "EXT-X-VERSION" => Ok(BasicTag::Version),
@@ -83,24 +86,7 @@ impl TagType for MediaSegmentTag {
     fn from_line(line: Result<String, io::Error>) -> Result<Self, TagError> {
         match line {
             Ok(line_str) => {
-                if !line_str.starts_with("#") {
-                    return Err(TagError::NotATagLine);
-                }
-
-                let tag_delim = ":";
-                let mut tag_check: Option<String> = None;
-
-                if line_str.contains(tag_delim) {
-                    if let Some((tag, _attrs)) = line_str.split_once(tag_delim) {
-                        let fmt_tag = tag.replace("#", "");
-                        tag_check = Some(fmt_tag);
-                    };
-                } else {
-                    let fmt_tag = line_str.replace("#", "");
-                    tag_check = Some(fmt_tag);
-                }
-
-                if let Some(tag_check) = tag_check {
+                if let Ok(tag_check) = parse_line(line_str) {
                     match tag_check.as_str() {
                         "EXTINF" => Ok(MediaSegmentTag::Duration),
                         "EXT-X-BYTERANGE" => Ok(MediaSegmentTag::ByteRange),
@@ -144,24 +130,7 @@ impl TagType for MediaPlaylistTag {
     fn from_line(line: Result<String, io::Error>) -> Result<Self, TagError> {
         match line {
             Ok(line_str) => {
-                if !line_str.starts_with("#") {
-                    return Err(TagError::NotATagLine);
-                }
-
-                let tag_delim = ":";
-                let mut tag_check: Option<String> = None;
-
-                if line_str.contains(tag_delim) {
-                    if let Some((tag, _attrs)) = line_str.split_once(tag_delim) {
-                        let fmt_tag = tag.replace("#", "");
-                        tag_check = Some(fmt_tag);
-                    };
-                } else {
-                    let fmt_tag = line_str.replace("#", "");
-                    tag_check = Some(fmt_tag);
-                }
-
-                if let Some(tag_check) = tag_check {
+                if let Ok(tag_check) = parse_line(line_str) {
                     match tag_check.as_str() {
                         "EXT-X-TARGETDURATION" => Ok(MediaPlaylistTag::TargetDduration),
                         "EXT-X-MEDIA-SEQUENCE" => Ok(MediaPlaylistTag::MediaSequence),
@@ -204,24 +173,7 @@ impl TagType for MasterPlaylistTag {
     fn from_line(line: Result<String, io::Error>) -> Result<Self, TagError> {
         match line {
             Ok(line_str) => {
-                if !line_str.starts_with("#") {
-                    return Err(TagError::NotATagLine);
-                }
-
-                let tag_delim = ":";
-                let mut tag_check: Option<String> = None;
-
-                if line_str.contains(tag_delim) {
-                    if let Some((tag, _attrs)) = line_str.split_once(tag_delim) {
-                        let fmt_tag = tag.replace("#", "");
-                        tag_check = Some(fmt_tag);
-                    };
-                } else {
-                    let fmt_tag = line_str.replace("#", "");
-                    tag_check = Some(fmt_tag);
-                }
-
-                if let Some(tag_check) = tag_check {
+                if let Ok(tag_check) = parse_line(line_str) {
                     match tag_check.as_str() {
                         "EXT-X-MEDIA" => Ok(MasterPlaylistTag::Rendition),
                         "EXT-X-STREAM-INF" => Ok(MasterPlaylistTag::VariantStream),
@@ -255,24 +207,7 @@ impl TagType for MediaOrMasterPlaylistTags {
     fn from_line(line: Result<String, io::Error>) -> Result<Self, TagError> {
         match line {
             Ok(line_str) => {
-                if !line_str.starts_with("#") {
-                    return Err(TagError::NotATagLine);
-                }
-
-                let tag_delim = ":";
-                let mut tag_check: Option<String> = None;
-
-                if line_str.contains(tag_delim) {
-                    if let Some((tag, _attrs)) = line_str.split_once(tag_delim) {
-                        let fmt_tag = tag.replace("#", "");
-                        tag_check = Some(fmt_tag);
-                    };
-                } else {
-                    let fmt_tag = line_str.replace("#", "");
-                    tag_check = Some(fmt_tag);
-                }
-
-                if let Some(tag_check) = tag_check {
+                if let Ok(tag_check) = parse_line(line_str) {
                     match tag_check.as_str() {
                         "EXT-X-INDEPENDENT-SEGMENTS" => {
                             Ok(MediaOrMasterPlaylistTags::IndependentSegments)
